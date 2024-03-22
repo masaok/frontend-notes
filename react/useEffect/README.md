@@ -1,3 +1,6 @@
+- [useEffect fires on page load even though dependency never changed](#useeffect-fires-on-page-load-even-though-dependency-never-changed)
+- [Do all useEffects fire at the same time on first page load?](#do-all-useeffects-fire-at-the-same-time-on-first-page-load)
+
 ### useEffect fires on page load even though dependency never changed
 
 When you use `useEffect` in React, it's designed to run after every render by default, including the initial render. That's why your `useEffect` hook fires on page load. The dependency array at the end of the `useEffect` call is what controls when it fires after the initial render. If the dependency array:
