@@ -1,3 +1,5 @@
+- [How to analyze bundle sizes without ejection](#how-to-analyze-bundle-sizes-without-ejection)
+  - [1. **Using `source-map-explorer`**](#1-using-source-map-explorer)
 - [How to analyze package sizes](#how-to-analyze-package-sizes)
   - [1. Use Webpack Bundle Analyzer](#1-use-webpack-bundle-analyzer)
   - [2. Source Map Explorer](#2-source-map-explorer)
@@ -10,6 +12,28 @@
   - [2. Using `react-app-rewired`](#2-using-react-app-rewired)
   - [3. Using `craco` (Create React App Configuration Override)](#3-using-craco-create-react-app-configuration-override)
   - [Conclusion](#conclusion)
+
+## How to analyze bundle sizes without ejection
+
+Analyzing bundle sizes in a Create React App (CRA) project without ejecting can be accomplished using tools and techniques that don't require modifying the internal webpack configuration directly. Here are several methods to do so:
+
+### 1. **Using `source-map-explorer`**
+
+`source-map-explorer` analyzes JavaScript bundles using the source maps. This allows you to see where code bloat is coming from.
+
+- **Installation**: Install it by running:
+
+  ```bash
+  npm install --save-dev source-map-explorer
+  ```
+
+- **Usage**: After building your app with `npm run build`, you can analyze the bundle by running:
+
+  ```bash
+  npx source-map-explorer 'build/static/js/*.js'
+  ```
+
+This method doesn't require any modifications to your CRA setup.
 
 ## How to analyze package sizes
 
