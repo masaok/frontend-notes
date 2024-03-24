@@ -1,13 +1,25 @@
-Analyzing package sizes in a React application is crucial for optimizing its performance, particularly for user load times. Here's how you can analyze and manage your package sizes:
+- [How to analyze package sizes](#how-to-analyze-package-sizes)
+  - [1. Use Webpack Bundle Analyzer](#1-use-webpack-bundle-analyzer)
+  - [2. Source Map Explorer](#2-source-map-explorer)
+  - [3. Lighthouse](#3-lighthouse)
+  - [4. Custom Webpack Configuration](#4-custom-webpack-configuration)
+  - [5. Analyze Dependencies](#5-analyze-dependencies)
+  - [Best Practices](#best-practices)
+- [Where is the create-react-app webpack-bundle-analyzer](#where-is-the-create-react-app-webpack-bundle-analyzer)
+  - [1. Ejecting](#1-ejecting)
+  - [2. Using `react-app-rewired`](#2-using-react-app-rewired)
+  - [3. Using `craco` (Create React App Configuration Override)](#3-using-craco-create-react-app-configuration-override)
+  - [Conclusion](#conclusion)
 
-- [1. Use Webpack Bundle Analyzer](#1-use-webpack-bundle-analyzer)
-- [2. Source Map Explorer](#2-source-map-explorer)
-- [3. Lighthouse](#3-lighthouse)
-- [4. Custom Webpack Configuration](#4-custom-webpack-configuration)
-- [5. Analyze Dependencies](#5-analyze-dependencies)
-- [Best Practices](#best-practices)
+## How to analyze package sizes
+
+Analyzing package sizes in a React application is crucial for optimizing its performance, particularly for user load times.
+
+Here's how you can analyze and manage your package sizes:
 
 ### 1. Use Webpack Bundle Analyzer
+
+**Note: this solution requires ejection.**
 
 Webpack Bundle Analyzer is a powerful tool that provides a visual way of understanding the output of your webpack bundle. It shows which components make up the bundle and their sizes, helping identify which packages are bloating your application.
 
@@ -53,5 +65,86 @@ Before adding a new package to your project, evaluate its size and impact on you
 - **Prune Unused Dependencies**: Regularly review and remove unused dependencies from your project.
 
 By incorporating these tools and practices into your development process, you can significantly improve your React application's load time and overall performance.
+
+## Where is the create-react-app webpack-bundle-analyzer
+
+`create-react-app` (CRA) abstracts away its Webpack config, making it initially inaccessible for direct modifications like adding plugins. To use `webpack-bundle-analyzer` or modify the Webpack config in a project bootstrapped with CRA, you have a few options:
+
+### 1. Ejecting
+
+Ejecting your CRA application will expose all the configuration files (including Webpack configs), allowing you to directly add and configure `webpack-bundle-analyzer`.
+
+- **Ejecting**: Run `npm run eject`. Be cautious, as this action is irreversible. After ejecting, you can modify the Webpack config directly to include `webpack-bundle-analyzer`.
+
+### 2. Using `react-app-rewired`
+
+`react-app-rewired` is a popular alternative that allows you to override the CRA's Webpack config without ejecting.
+
+- **Installation**: Install `react-app-rewired` and `webpack-bundle-analyzer`.
+
+  ```
+  npm install react-app-rewired webpack-bundle-analyzer --save-dev
+  ```
+
+- **Configuration**: Create a `config-overrides.js` file in your project root:
+
+  ```js
+  const { override, addWebpackPlugin } = require("react-app-rewired");
+  const BundleAnalyzerPlugin =
+    require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+
+  module.exports = override(addWebpackPlugin(new BundleAnalyzerPlugin()));
+  ```
+
+- **Usage**: Replace `react-scripts` in your `package.json` scripts with `react-app-rewired`:
+
+  ```json
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+  }
+  ```
+
+Running `npm run build` now will include the bundle analysis.
+
+### 3. Using `craco` (Create React App Configuration Override)
+
+`craco` is another tool to customize CRA configurations without ejecting, similar to `react-app-rewired`.
+
+- **Installation**: Install `@craco/craco` and `webpack-bundle-analyzer`.
+
+  ```
+  npm install @craco/craco webpack-bundle-analyzer --save-dev
+  ```
+
+- **Configuration**: Create a `craco.config.js` in your project root:
+
+  ```js
+  const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+
+  module.exports = {
+    webpack: {
+      plugins: {
+        add: [new BundleAnalyzerPlugin()],
+      },
+    },
+  };
+  ```
+
+- **Modify Package.json**: Update the scripts to use `craco` instead of `react-scripts`.
+
+  ```json
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test"
+  }
+  ```
+
+### Conclusion
+
+While ejecting gives you full control over the configuration, it also means taking over the responsibility for maintaining this configuration. Tools like `react-app-rewired` and `craco` offer a more maintainable way to customize the Webpack configuration of your CRA project, including adding `webpack-bundle-analyzer` for bundle analysis.
 
 https://chat.openai.com/share/73967d63-5e4a-4169-8d86-13d123a288ff
