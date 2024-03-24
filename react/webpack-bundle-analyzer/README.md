@@ -15,7 +15,9 @@
 
 ## How to analyze bundle sizes without ejection
 
-Analyzing bundle sizes in a Create React App (CRA) project without ejecting can be accomplished using tools and techniques that don't require modifying the internal webpack configuration directly. Here are several methods to do so:
+Analyzing bundle sizes in a Create React App (CRA) project without ejecting can be accomplished using tools and techniques that don't require modifying the internal webpack configuration directly.
+
+Here are several methods to do so:
 
 ### 1. **Using `source-map-explorer`**
 
