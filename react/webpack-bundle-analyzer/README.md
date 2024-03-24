@@ -35,10 +35,16 @@ Here are several methods to do so:
   npx source-map-explorer 'build/static/js/*.js'
   ```
 
-- **Even better**: List bundles with sizes in descending size order:
+- **Or in terminal**: List bundles with sizes in descending size order:
 
   ```bash
   npx source-map-explorer build/static/js/*.js --tsv | less
+  ```
+
+- **Even better in HTML**: List bundles with sizes in descending size order:
+  ```bash
+  npx source-map-explorer build/static/js/*.js --html > build/bundle.html
+  open build/bundle.html
   ```
 
 This method doesn't require any modifications to your CRA setup.
