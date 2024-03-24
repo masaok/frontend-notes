@@ -35,6 +35,12 @@ Here are several methods to do so:
   npx source-map-explorer 'build/static/js/*.js'
   ```
 
+- **Even better**: List bundles with sizes in descending size order:
+
+  ```bash
+  npx source-map-explorer build/static/js/*.js --tsv | less
+  ```
+
 This method doesn't require any modifications to your CRA setup.
 
 ## How to analyze package sizes
