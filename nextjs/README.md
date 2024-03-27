@@ -1,7 +1,7 @@
-- [Why NextJS uses SWC](#why-nextjs-uses-swc)
+- [Why does NextJS use SWC?](#why-does-nextjs-use-swc)
 - [What is the equivalent of tsc for testing typescript validity?](#what-is-the-equivalent-of-tsc-for-testing-typescript-validity)
 
-### Why NextJS uses SWC
+### Why does NextJS use SWC?
 
 Next.js uses SWC, a Rust-based platform for the Web, as a key part of its build toolchain for several compelling reasons:
 
