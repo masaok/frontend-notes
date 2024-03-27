@@ -13,7 +13,11 @@
 
 #### Solution
 
-`jest.config.js`
+```
+bun add -d @swc/jest
+```
+
+`jest.config.js`:
 
 ```
   // Must use @swc/jest to transform TypeScript files in NextJS, which uses SWC to compile TypeScript
