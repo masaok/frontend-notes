@@ -6,6 +6,20 @@
     - [**2. For Realtime Updates:**](#2-for-realtime-updates)
     - [**3. For Static or Public Data:**](#3-for-static-or-public-data)
   - [**Decision Framework**](#decision-framework)
+- [How to Avoid Duplicate Code in Server Actions and Client-side Code](#how-to-avoid-duplicate-code-in-server-actions-and-client-side-code)
+  - [**1. Extract Shared Logic into Utility Functions**](#1-extract-shared-logic-into-utility-functions)
+    - [Example:](#example)
+    - [Server Action:](#server-action)
+    - [Client Code:](#client-code)
+  - [**2. Use Dependency Injection for Supabase Client**](#2-use-dependency-injection-for-supabase-client)
+    - [Example:](#example-1)
+    - [Server Action:](#server-action-1)
+    - [Client Code:](#client-code-1)
+  - [**3. Centralize Data Fetching via an API Route**](#3-centralize-data-fetching-via-an-api-route)
+    - [Example:](#example-2)
+    - [Client Code (Fetch Data from API):](#client-code-fetch-data-from-api)
+  - [**4. Combine with Supabase Functions**](#4-combine-with-supabase-functions)
+  - [**Summary of Approaches**](#summary-of-approaches)
 
 ## Should all database calls be server actions?
 
@@ -122,3 +136,174 @@ In Next.js (with TypeScript and Supabase), whether all database calls should be 
 | Heavy Processing Logic    | Offload to server actions or APIs |
 
 By default, prioritize server actions for database interactions unless client-side real-time features or public data needs dictate otherwise.
+
+## How to Avoid Duplicate Code in Server Actions and Client-side Code
+
+To avoid duplicated code when you need both server actions and client-side code for similar database interactions, you can refactor the shared logic into reusable functions or modules. Here’s how you can organize your code effectively:
+
+---
+
+### **1. Extract Shared Logic into Utility Functions**
+
+Create a utility function for the database operation that can be reused in both the server and client contexts.
+
+#### Example:
+
+```typescript
+// utils/database.ts
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseClient = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
+
+export const fetchUserById = async (userId: string) => {
+  const { data, error } = await supabaseClient
+    .from("users")
+    .select("*")
+    .eq("id", userId)
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+};
+```
+
+Now, use this function in both server and client code:
+
+#### Server Action:
+
+```typescript
+// app/actions/fetchUser.ts
+import { fetchUserById } from "@/utils/database";
+
+export const fetchUser = async (userId: string) => {
+  return await fetchUserById(userId);
+};
+```
+
+#### Client Code:
+
+```typescript
+// app/page.tsx
+"use client";
+
+import { fetchUserById } from "@/utils/database";
+
+const UserProfile = async ({ userId }: { userId: string }) => {
+  try {
+    const user = await fetchUserById(userId);
+    return <div>{user.name}</div>;
+  } catch (error) {
+    return <div>Error: {error.message}</div>;
+  }
+};
+```
+
+---
+
+### **2. Use Dependency Injection for Supabase Client**
+
+Pass the Supabase client as an argument to the utility function. This allows you to use the same logic in different contexts (server or client).
+
+#### Example:
+
+```typescript
+// utils/database.ts
+export const fetchUser = async (supabase: SupabaseClient, userId: string) => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", userId)
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+};
+```
+
+#### Server Action:
+
+```typescript
+import { createClient } from "@supabase/supabase-js";
+import { fetchUser } from "@/utils/database";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
+
+export const fetchUserServer = async (userId: string) => {
+  return await fetchUser(supabase, userId);
+};
+```
+
+#### Client Code:
+
+```typescript
+import { createClient } from "@supabase/supabase-js";
+import { fetchUser } from "@/utils/database";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!
+);
+
+const fetchUserClient = async (userId: string) => {
+  return await fetchUser(supabase, userId);
+};
+```
+
+---
+
+### **3. Centralize Data Fetching via an API Route**
+
+Instead of writing separate client and server-side logic, you can centralize the database calls in an API route. This approach avoids duplication altogether.
+
+#### Example:
+
+```typescript
+// app/api/user/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { fetchUserById } from "@/utils/database";
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await fetchUserById(params.id);
+    return NextResponse.json(user);
+  } catch (error) {
+    return NextResponse.error();
+  }
+}
+```
+
+#### Client Code (Fetch Data from API):
+
+```typescript
+const fetchUser = async (userId: string) => {
+  const response = await fetch(`/api/user/${userId}`);
+  if (!response.ok) throw new Error("Failed to fetch user");
+  return await response.json();
+};
+```
+
+---
+
+### **4. Combine with Supabase Functions**
+
+For even more modularity, consider moving logic to **Supabase Edge Functions**. These functions can encapsulate the database logic and be called from both the server and client securely.
+
+---
+
+### **Summary of Approaches**
+
+| Approach                         | When to Use                                                             |
+| -------------------------------- | ----------------------------------------------------------------------- |
+| Utility functions (shared logic) | Simple use cases where client and server need the same operation.       |
+| Dependency injection             | To support context-specific Supabase clients (e.g., private vs public). |
+| Centralized API routes           | When avoiding client-side logic duplication entirely.                   |
+| Supabase Edge Functions          | For highly reusable, secure, serverless logic.                          |
+
+By centralizing the database interaction in a reusable function or API route, you maintain consistency while avoiding code duplication.
