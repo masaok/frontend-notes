@@ -20,6 +20,13 @@
     - [Client Code (Fetch Data from API):](#client-code-fetch-data-from-api)
   - [**4. Combine with Supabase Functions**](#4-combine-with-supabase-functions)
   - [**Summary of Approaches**](#summary-of-approaches)
+- [Service vs Repository vs Controller vs Manager](#service-vs-repository-vs-controller-vs-manager)
+  - [**1. Service**](#1-service)
+  - [**2. Repository**](#2-repository)
+  - [**3. Controller**](#3-controller)
+  - [**4. Manager**](#4-manager)
+  - [**Which to Choose?**](#which-to-choose)
+  - [**Recommended Approach for Supabase in Next.js**](#recommended-approach-for-supabase-in-nextjs)
 
 ## Should all database calls be server actions?
 
@@ -307,3 +314,168 @@ For even more modularity, consider moving logic to **Supabase Edge Functions**. 
 | Supabase Edge Functions          | For highly reusable, secure, serverless logic.                          |
 
 By centralizing the database interaction in a reusable function or API route, you maintain consistency while avoiding code duplication.
+
+## Service vs Repository vs Controller vs Manager
+
+When centralizing your database logic in a class, the naming convention you choose should align with its role and responsibilities. Here's a breakdown of common naming patterns:
+
+---
+
+### **1. Service**
+
+- **Use Case**: A service class encapsulates business logic and interactions with the database.
+- **Common in**: Backend-focused architecture (e.g., Node.js, NestJS, Spring Boot).
+- **When to Use**: If your class is primarily responsible for implementing reusable and high-level operations that interact with the database.
+- **Example**:
+
+  ```typescript
+  // services/UserService.ts
+  import { SupabaseClient } from "@supabase/supabase-js";
+
+  export class UserService {
+    private supabase: SupabaseClient;
+
+    constructor(supabase: SupabaseClient) {
+      this.supabase = supabase;
+    }
+
+    async getUserById(userId: string) {
+      const { data, error } = await this.supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      if (error) throw new Error(error.message);
+      return data;
+    }
+  }
+  ```
+
+---
+
+### **2. Repository**
+
+- **Use Case**: A repository class focuses purely on data access, abstracting database queries.
+- **Common in**: Data Access Layer (DAL) implementations, particularly in systems with layered architecture.
+- **When to Use**: If your class is limited to database interactions without any business logic.
+- **Example**:
+
+  ```typescript
+  // repositories/UserRepository.ts
+  import { SupabaseClient } from "@supabase/supabase-js";
+
+  export class UserRepository {
+    private supabase: SupabaseClient;
+
+    constructor(supabase: SupabaseClient) {
+      this.supabase = supabase;
+    }
+
+    async fetchUserById(userId: string) {
+      const { data, error } = await this.supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      if (error) throw new Error(error.message);
+      return data;
+    }
+  }
+  ```
+
+---
+
+### **3. Controller**
+
+- **Use Case**: A controller is typically responsible for handling requests, orchestrating services, and returning responses.
+- **Common in**: MVC (Model-View-Controller) frameworks.
+- **When to Use**: If your class is tied to handling client requests and delegating logic to services or repositories. In the context of Next.js, this would likely be unnecessary because API routes or server actions act as controllers.
+- **Example**:
+
+  ```typescript
+  // controllers/UserController.ts
+  import { UserService } from "@/services/UserService";
+
+  export class UserController {
+    private userService: UserService;
+
+    constructor(userService: UserService) {
+      this.userService = userService;
+    }
+
+    async getUser(userId: string) {
+      return await this.userService.getUserById(userId);
+    }
+  }
+  ```
+
+---
+
+### **4. Manager**
+
+- **Use Case**: A manager class combines logic from multiple services, repositories, or external APIs.
+- **Common in**: Complex systems where you need to orchestrate multiple dependencies.
+- **When to Use**: If your class combines business logic from multiple sources.
+- **Example**:
+
+  ```typescript
+  // managers/UserManager.ts
+  import { UserService } from "@/services/UserService";
+  import { AnalyticsService } from "@/services/AnalyticsService";
+
+  export class UserManager {
+    private userService: UserService;
+    private analyticsService: AnalyticsService;
+
+    constructor(userService: UserService, analyticsService: AnalyticsService) {
+      this.userService = userService;
+      this.analyticsService = analyticsService;
+    }
+
+    async getUserWithStats(userId: string) {
+      const user = await this.userService.getUserById(userId);
+      const stats = await this.analyticsService.getUserStats(userId);
+      return { ...user, stats };
+    }
+  }
+  ```
+
+---
+
+### **Which to Choose?**
+
+- **Service**: When focusing on high-level operations with some business logic.
+- **Repository**: When isolating pure database access without additional logic.
+- **Controller**: Rarely used for centralizing database logic in Next.js—API routes or server actions act as controllers.
+- **Manager**: When coordinating multiple services or external systems.
+
+---
+
+### **Recommended Approach for Supabase in Next.js**
+
+- **Name it `UserService` or similar**, as it encapsulates business logic and database operations in a meaningful, reusable way. This is a common and intuitive choice for this use case.
+
+```typescript
+// services/UserService.ts
+import { SupabaseClient } from "@supabase/supabase-js";
+
+export class UserService {
+  private supabase: SupabaseClient;
+
+  constructor(supabase: SupabaseClient) {
+    this.supabase = supabase;
+  }
+
+  async getUserById(userId: string) {
+    const { data, error } = await this.supabase
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+}
+```
+
+This provides clarity to team members that the class encapsulates reusable logic to work with user data.
