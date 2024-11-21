@@ -20,7 +20,7 @@
     - [Client Code (Fetch Data from API):](#client-code-fetch-data-from-api)
   - [**4. Combine with Supabase Functions**](#4-combine-with-supabase-functions)
   - [**Summary of Approaches**](#summary-of-approaches)
-- [Service vs Repository vs Controller vs Manager](#service-vs-repository-vs-controller-vs-manager)
+- [Service vs. Repository vs. Controller vs. Manager](#service-vs-repository-vs-controller-vs-manager)
   - [**1. Service**](#1-service)
   - [**2. Repository**](#2-repository)
   - [**3. Controller**](#3-controller)
@@ -315,7 +315,7 @@ For even more modularity, consider moving logic to **Supabase Edge Functions**. 
 
 By centralizing the database interaction in a reusable function or API route, you maintain consistency while avoiding code duplication.
 
-## Service vs Repository vs Controller vs Manager
+## Service vs. Repository vs. Controller vs. Manager
 
 When centralizing your database logic in a class, the naming convention you choose should align with its role and responsibilities. Here's a breakdown of common naming patterns:
 
